@@ -1,0 +1,71 @@
+---
+title: "I can find 'Nuclear Inssa!'(나는 핵인싸를 찾을 수 있다!)"
+author: "DataMarketingStudy"
+date: "`r Sys.Date()`"
+output: 
+  html_document :  
+    toc : TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Step 1. 데이터 구조 확인 / 데이터프레임 형식 변환
+
+ + 첫번째 단계는 바로 데이터 구조를 파악하고, 데이터프레임 형식을 네트워크 그래프 형식으로 변환합니다.
+
+```{r, message=FALSE, warning=FALSE}
+library(igraph) # 네트워크 그래프는 igraph 패키지를 이용합니다.
+inssalist<-read.csv("inssalist.csv") #데이터 불러오기
+str(inssalist) #데이터 구조 파악
+inssalist <- inssalist[,-1] # 필요없는 첫번째 컬럼 제거
+head(inssalist) # 일부 데이터 확인
+```
+
+ + 데이터프레임을 네트워크 그래프로 표현할 수 있게 형식을 변환해줍니다.
+ + 네트워크 그래프 형식으로 변환된 데이터 프레임을 Head 함수를 이용하여 살펴보니,  
+   두 사람 간 관계가 있을 경우 '1'로 없을 경우 '.'으로 벡터값이 나오는 것을 확인할 수 있습니다. 
+
+```{r, message=FALSE, warning=FALSE, fig.width=12}
+dfinssa<-graph.data.frame(inssalist, directed = FALSE) #네트워크 그래프 형식으로 변환
+dfinssa
+head(dfinssa)
+```
+
+## 네트워크 그래프 그리기
+
+ + 이제 네트워크 그래프를 그려보도록 하겠습니다.
+
+```{r pressure, message=FALSE, warning=FALSE}
+set.seed(100)
+plot(dfinssa)
+```
+
+ + 국방대 경영학과 19학번의 인스타 팔로 관계를 보여주는 네트워크 그래프가 생성되었습니다.
+ + 그래프의 중앙에 위치하고, 연결이 많을수록 핵인싸라는 것을 알 수 있습니다.  
+   그러나 이 그래프는 모든 원의 크기가 동일하게 되어 있어, 한눈에 그래프가 보이도록 조절하도록 하겠습니다.
+
+```{r, message=FALSE, warning=FALSE}
+set.seed(123)
+plot(dfinssa, vertex.size = 30, main = "국방대 경영 19학번 인스타 팔로우 관계")
+```
+
+ + 원(노드)의 크기를 조금 키우니, 보기는 좋아진 것 같습니다.  
+   하지만 아쉽게도 노드의 크기가 같으니, 노드 간의 중요도 차이를 파악하기가 어려운 것 같습니다.  
+   그래서 중요도를 기준으로 노드의 크기를 다르게 표현해보도록 하겠습니다.  
+ + 노드의 중요도를 판단하는 방법은 여러 가지가 있는데, `연결 중심성`, `근접 중심성`, `페이지랭크` 방법등이 있습니다.  
+   이 예제에서는 노드에 연결된 edge(선) 수에 따라 중요도를 파악하는 `연결 중심성` 방법을 사용하도록 하겠습니다.
+   
+```{r, message=FALSE, warning=FALSE}
+degree(dfinssa) # 각 노드에 연결된 edge 수를 파악하는 함수
+```
+
+ + 각 노드별 edge 수를 파악하고 난 후, 각 edge 수를 기준으로 다시 네트워크 그래프를 그려보도록 하겠습니다.
+ 
+```{r, message=FALSE, warning=FALSE}
+set.seed(123)
+plot(dfinssa, vertex.size = degree(dfinssa)*5,
+     vertex.label.dist =0.3,
+     main="국방대 경영 19학번 인스타 팔로우 관계")
+```
